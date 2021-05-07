@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert'; // usado para o parsar do JSON
+import 'package:http/http.dart' as http; // trabalhar com o protocolo HTTP
 
 // Método principal da aplicação
 void main() {
@@ -6,6 +8,25 @@ void main() {
     home: Home(),
     debugShowCheckedModeBanner: false,
   ));
+}
+
+class Pessoa {
+  String id;
+  String status;
+  String nome;
+  String email;
+
+  Pessoa({this.id, this.status, this.nome, this.email});
+
+  // cria um método que fabrica objetos (Factory - Design Pattern)
+  factory Pessoa.fromJson(Map<String, dynamic> json) {
+    return Pessoa(
+      id: json['id'] as String,
+      status: json['status'] as String,
+      nome: json['name'] as String,
+      email: json['email'] as String,
+    );
+  }
 }
 
 class Home extends StatefulWidget {
@@ -31,10 +52,46 @@ class _HomeState extends State<Home> {
   // https://github.com/EdsonMSouza/simple-php-api
 
   // Endereço da API
-  // Uri url = Uri.parse('http://emsapi.esy.es/rest/api/search/');
+  Uri url = Uri.parse('http://emsapi.esy.es/rest/api/search/');
 
   // Método para requisição da API
-  jsonRestApiHttp() async {}
+  jsonRestApiHttp() async {
+    http.Response response = await http.post(
+      this.url,
+      headers: <String, String>{
+        "Content-type": "Application/json; charset=UTF-8",
+        "Authorization": "123"
+      },
+      body: jsonEncode(<String, String>{
+        "username": usuarioController.text,
+        "password": senhaController.text
+      }),
+    );
+
+    final parsed = jsonDecode(response.body).cast<Map<String, dynamic>>();
+    List pessoa = parsed.map<Pessoa>((json) => Pessoa.fromJson(json)).toList();
+
+    // percorrendo o objeto recebido
+    for (var p in pessoa) {
+      if (p.status != '201') {
+        usuarioController.text = '';
+        senhaController.text = '';
+        setState(() {
+          _id = '';
+          _nome = '';
+          _email = '';
+          _erro = 'Usuário não localizado ou ...';
+        });
+      } else {
+        setState(() {
+          _id = p.id;
+          _nome = p.nome;
+          _email = p.email;
+          _erro = '';
+        });
+      }
+    }
+  }
 
   // Corpo da aplicação
   @override

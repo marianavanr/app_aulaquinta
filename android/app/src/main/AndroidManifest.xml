@@ -1,6 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.aula_seismaio">
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
    <application
+        android:name="io.flutter.app.FlutterApplication"
+        android:usesCleartextTraffic="true"
         android:label="aula_seismaio"
         android:icon="@mipmap/ic_launcher">
         <activity
